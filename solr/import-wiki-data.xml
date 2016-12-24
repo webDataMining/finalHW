@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://wiki.apache.org/solr/DataImportHandler#Example:_Indexing_wikipedia -->
+<dataConfig>
+        <dataSource type="FileDataSource" encoding="UTF-8" />
+        <document>
+        <entity name="page"
+                processor="XPathEntityProcessor"
+                stream="true"
+                forEach="/mediawiki/page/"
+                url="/var/www/html/solr/data/zhwiki-20161101-pages-articles-multistream-simplified.xml"
+                transformer="RegexTransformer,DateFormatTransformer"
+                >
+            <field column="id"        xpath="/mediawiki/page/id" />
+            <field column="title"     xpath="/mediawiki/page/title" />
+            <field column="revision"  xpath="/mediawiki/page/revision/id" />
+            <field column="user"      xpath="/mediawiki/page/revision/contributor/username" />
+            <field column="userId"    xpath="/mediawiki/page/revision/contributor/id" />
+            <field column="text"      xpath="/mediawiki/page/revision/text" />
+            <field column="timestamp" xpath="/mediawiki/page/revision/timestamp" dateTimeFormat="yyyy-MM-dd'T'hh:mm:ss'Z'" />
+<!--             <field column="$skipDoc"  regex="^#(REDIRECT|redirect|重定向) .*" replaceWith="true" sourceColName="text"/> -->
+            <field column="$skipDoc"  regex=".*?\{\{简繁重定向\}\}$" replaceWith="true" sourceColName="text"/>
+        </entity>
+        </document>
+</dataConfig>
