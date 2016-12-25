@@ -250,17 +250,17 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 
 然后对每个词条中所有的句子进行评分，句子的评分为以下4项的和：
 
-##### 1. 句子与问题的n-gram相似度  autoQA.utility.oneGramSimScore()
+##### 1. 句子与问题的n-gram相似度  `autoQA.utility.oneGramSimScore()`
 
 对问题进行分词，得到词语的集合Qset，维基百科中词条的句子也进行分词，得到词语的集合Sset，然后返回共有词语个数/总词语个数作为1-gram相似度的得分。
 
-##### 2. 句子与问题的命名实体相似度 autoQA.utility.entitySimScore()
+##### 2. 句子与问题的命名实体相似度 `autoQA.utility.entitySimScore()`
 
 类似于上面的1-gram相似度，抽取出问题中的命名实体及其类别，得到集合Qset_entity，同样，抽取出句子中的命名实体及其类别，得到集合Sset_entity，返回共有实体/总实体个数作为命名实体相似度得分。
 
 之所以要将命名实体相似度得分单独列出，主要是为了突出其在问句中的重要地位，因为问题一般来说是针对某个实体的某种属性的，这就使得实体在问句和答案中都具有指明方向的地位。
 
-##### 3. 句子与问题的依存语法相似度 autoQA.utility.flat\_grammar\_dependency\_sim\_score\_ver2()
+##### 3. 句子与问题的依存语法相似度 `autoQA.utility.flat_grammar_dependency_sim_score_ver2()`
 
 为了利用句子更深层次的信息对答案进行匹配，在答案句子评分中还使用了依存句法分析的结果，计算的方法参考了文章“基于语义依存关系匹配的汉语句子相似度计算”，具体如下：
 
@@ -270,16 +270,16 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 
 为了避免问句形式对语义依存分析的影响，对大部分含有“是”的问题，如“世界第一高峰是我国的什么山峰”，还会生成“我国的什么山峰是世界第一高峰”，对于一个候选句子，可以分别计算与这两个句子的依存语法相似度，取其中较高的作为该句子的依存语法相似度得分。
 
-##### 4. 句子中是否含有问题中所需的实体或词语类型 autoQA.utility.contains\_question\_answer\_type\_sim\_score()
+##### 4. 句子中是否含有问题中所需的实体或词语类型 `autoQA.utility.contains_question_answer_type_sim_score()`
 
-通过一些规则对问句的答案类型进行推断（代码见autoQA.questionAnalysis.infer\_question\_answer\_type()），如，含有疑问代词“谁”的问句，其答案句中应该有人名，含有疑问代词“哪里”的问句，其答案句中应该有地名。如果候选句子中含有相应类型的实体或名词，则会对应地得到0.5 / 0.25的相似性得分。
+通过一些规则对问句的答案类型进行推断（代码见`autoQA.questionAnalysis.infer_question_answer_type()`），如，含有疑问代词“谁”的问句，其答案句中应该有人名，含有疑问代词“哪里”的问句，其答案句中应该有地名。如果候选句子中含有相应类型的实体或名词，则会对应地得到0.5 / 0.25的相似性得分。
 
 ##### 总得分的计算及句子抽取
 
 对每个词条，将其分句后，对每个句子计算上述四种相似度得分的和，作为该句子的相似度得分sim\_sentence，然后将N\_solr个词条中的每个句子的sim\_sentence乘以前文中提到的权重，得到每个句子最终的得分sim\_sentence\_overall，再依sim\_sentence\_overall将所有句子进行排序，取出排名前五的句子，送入答案抽取阶段。
 
-为封闭测试抽取的句子在autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt中
-为开放测试抽取的句子在autoQA/online\_questions\_recommend\_sentences.zip中
+为封闭测试抽取的句子在`autoQA/z_full_questions_recommend_sentences_ver3_part{1,2,3}.txt`中
+为开放测试抽取的句子在`autoQA/online_questions_recommend_sentences.zip`中
 
 #### 答案提取
 
