@@ -13,6 +13,7 @@
 * 王鹏飞：
 * 温凯：句子评分及排序，基于TrieTree的维基百科查询词匹配
 * 曾繁辉：问题分类，封闭测试答案提取，开放测试答案提取（基于范志康给出的部分结果）
+
 ## 编译 & 运行环境
 
 * 问题分类：Java，Win 10
@@ -28,9 +29,9 @@
 * 为了方便协同开发，使用PHP编写了一个API（封闭测试和开放测试均使用此API进行查询），API部署于[search.fanzhikang.cn/api/](http://search.fanzhikang.cn/api/)，API程序和文档在压缩包中`search`文件夹，也可见[GitHub](https://github.com/webDataMining/server)
  * `range=local`时仅使用solr系统返回的数据（来自课程提供的维基百科XML），即封闭测试
  * `range=online`时使用爬虫返回的数据，即开放测试
- * 在查询词抽取中，使用了基于TrieTree的正向最大匹配算法，解决了维基百科词条较多（上百万）所带来的效率问题
- * 在句子排序中，使用支持python的[pyltp](pyltp.readthedocs.io/zh_CN/latest/)作为分句、分词、词性标注、句法分析、命名实体识别的工具包。通过1-gram，基于命名实体的1-gram，依存句法相似度，问句答案类型相似度来对句子进行打分。
- * 在答案抽取中，使用基于Java的[HanLP](http://hanlp.linrunsoft.com/)作为分词、句法分析、命名实体识别的工具包。
+* 在查询词抽取中，使用了基于TrieTree的正向最大匹配算法，解决了维基百科词条较多（上百万）所带来的效率问题
+* 在句子排序中，使用支持python的[pyltp](pyltp.readthedocs.io/zh_CN/latest/)作为分句、分词、词性标注、句法分析、命名实体识别的工具包。通过1-gram，基于命名实体的1-gram，依存句法相似度，问句答案类型相似度来对句子进行打分。
+* 在答案抽取中，使用基于Java的[HanLP](http://hanlp.linrunsoft.com/)作为分词、句法分析、命名实体识别的工具包。
  
 ## 使用的方法 & 资源
 
