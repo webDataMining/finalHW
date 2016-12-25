@@ -278,8 +278,9 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 
 对每个词条，将其分句后，对每个句子计算上述四种相似度得分的和，作为该句子的相似度得分sim\_sentence，然后将N\_solr个词条中的每个句子的sim\_sentence乘以前文中提到的权重，得到每个句子最终的得分sim\_sentence\_overall，再依sim\_sentence\_overall将所有句子进行排序，取出排名前五的句子，送入答案抽取阶段。
 
-为封闭测试抽取的句子在autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt中
-为开放测试抽取的句子在autoQA/online\_questions\_recommend\_sentences.zip中
+为封闭测试抽取的句子在`autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt`中
+
+为开放测试抽取的句子在`autoQA/online\_questions\_recommend\_sentences.zip`中
 
 #### 答案提取
 
@@ -486,6 +487,32 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 * 搜狗搜索：[奥巴马是哪国人](https://www.sogou.com/web?query=奥巴马是哪国人)，[苹果公司的客服电话是什么](https://www.sogou.com/web?query=苹果公司的客服电话是什么)，[冬泳下水之前饮用白酒可以御寒吗](https://www.sogou.com/web?query=冬泳下水之前饮用白酒可以御寒吗)
 * bing搜索：[意大利的官方语言](http://cn.bing.com/search?q=意大利的官方语言)，[北京大学的地址在哪里](http://cn.bing.com/search?q=北京大学的地址在哪里)，[10的平方是多少](http://cn.bing.com/search?q=10的平方是多少)
 
+从HTML代码中提取最佳答案的代码节选如下：
+
+```php
+// bing搜索推荐答案
+$bing_search = request_get("http://cn.bing.com/search", array("q" => $text));
+$html = str_get_html($bing_search);
+// eg: 意大利的官方语言
+$recommend_answer = $html->find("div[class=b_xlText b_emphText]", 0)->plaintext;
+if (strlen($recommend_answer) == 0) {
+    // eg: 北京大学的地址在哪里
+    $recommend_answer = $html->find("div[class=b_secondaryFocus b_emphText]", 1)->plaintext;
+    if (strlen($recommend_answer) == 0) {
+        // eg: 一公里等于多少米
+        $recommend_answer = $html->find("div[class=b_focusTextSmall b_emphText]", 0)->plaintext;
+        if (strlen($recommend_answer) == 0) {
+            // eg: 9的立方是多少
+            $calculator = $html->find("div[id=rcCalB]", 0);
+            if ($calculator) {
+                $recommend_answer = $calculator->find("span[id=rcTB]", 0)->plaintext;
+            }
+        }
+    }
+}
+add_recommend($result, $recommend_answer);
+```
+
 其中需要特别注意的是，搜狗有一个“立知”系统（[参考此新闻报道](http://news.163.com/16/1111/16/C5JR8HCD00014AEE.html)），其直接返回推荐答案的频率和效果都是最好的，但是经过大量的测试发现，有些“立知”返回的答案，其在网页上并不可见，但是源代码中是存在的。可能是搜狗认为这些答案置信度不够高因此将其隐藏，但经过测试比对，它们仍然有相当高的正确率，因此这些答案也被采用
 
 * 例如，使用搜狗搜索[哪个海峡沟通了北冰洋与太平洋](https://www.sogou.com/web?query=哪个海峡沟通了北冰洋与太平洋)时，有时候其结果并不会显示出来，但是查看网页源代码会发现有一个`class=txt-box`的`div`元素，其CSS属性为`display:none`，但是其中的内容正是该问题的正确答案“白令海峡”
@@ -493,6 +520,28 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 #### 返回答案语料
 
 除了尝试提取最佳答案外，根据搜索引擎返回的每条信息，提取其中的文本，作为语料交给下一步处理
+
+从HTML代码中提取语料的代码节选如下：
+
+```php
+// 搜狗搜索
+$find = false;
+foreach($html->find("div[class=rb]") as $element) {
+    $element_title = $element->find("h3[class=pt]", 0)->plaintext;
+    $element_text = $element->find("div[class=ft]", 0)->plaintext;
+    add_search_result($result, $element_title, $element_text);
+    $find = true;
+}
+foreach($html->find("div[class=vrwrap]") as $element) {
+    $element_title = $element->find("h3[class=vrTitle]", 0)->plaintext;
+    $element_text = $element->find("p[class=str_info]", 0)->plaintext;
+    add_search_result($result, $element_title, $element_text);
+    $find = true;
+}
+if (!$find) {
+    array_push($result["warnings"], "搜狗搜索无结果");
+}
+```
 
 使用的第三方库：
 
