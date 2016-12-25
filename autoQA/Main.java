@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import com.hankcs.hanlp.corpus.dependency.CoNll.CoNLLSentence;
 import com.hankcs.hanlp.corpus.dependency.CoNll.CoNLLWord;
 
-public class Readfile {
+public class Main {
 	static int count = 0;
 	static int zzz = 0;
 	static Segment segment = HanLP.newSegment().enableAllNamedEntityRecognize(true);
