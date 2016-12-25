@@ -226,7 +226,7 @@ try:
     result = eval(response.read().decode())
     return(result["trans_result"][0]['dst'])
 ```
-* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见**loadWordVector.py**），词义相似度的计算如下
+* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见**loadWordVector.py**，其中用到了[中文词义向量库 word_vectors_20161214.dump](https://pan.baidu.com/s/1hrNcmI4)），词义相似度的计算如下
 ```python
 nfo_key_array = np.array(info_key_vec[k]) 
 info_key_len = np.sqrt(info_key_array.dot(info_key_array)) #infobox的key的词义向量的模长
@@ -332,3 +332,4 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 * [HanLP官方文档](http://hanlp.linrunsoft.com/doc/_build/html/index.html)
 * [汪卫明, 梁东莺. 基于语义依存关系匹配的汉语句子相似度计算[J]. 深圳信息职业技术学院学报, 2014, 12(1):56-61.](http://mall.cnki.net/magazine/article/SZXZ201401012.htm)
 * [百度翻译API使用说明文档](http://api.fanyi.baidu.com/api/trans/product/apidoc)
+* [中文词义向量库 word_vectors_20161214.dump](http://pan.baidu.com/s/1hrNcmI4)
