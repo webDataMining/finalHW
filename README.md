@@ -342,8 +342,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
  public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
     	CoNLLSentence query_c = HanLP.parseDependency(query);
     	String answer = "";
-    	//System.out.println(query);
-    	//System.out.println("正确答案是："+true_answer);
     	int find = 0;
     	ArrayList<String> subject_arr = new ArrayList<String>();
     	ArrayList<String> object_arr = new ArrayList<String>();
@@ -354,7 +352,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
         }   
         */ 	
         for (CoNLLWord word : query_c){
-            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
             if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
         }
         for (CoNLLWord word : query_c){
@@ -372,7 +369,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
         	ArrayList<String> subject_sen = new ArrayList<String>();
         	ArrayList<String> object_sen = new ArrayList<String>();
             for (CoNLLWord word : query_c){
-                //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
                 if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
             }
             if(sentence_main.equals(query_main)==false) continue;
@@ -390,12 +386,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
             		if(sub_que.equals(ob_sen)){
             			if(subject_sen.size()>0)
             			answer = subject_sen.get(0);
-            			/*
-            			if(answer.equals(true_answer)){
-            				find = 1;
-            				break;
-            			}
-            			*/
             			find = 1;
             			break;
             		}
