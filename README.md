@@ -206,8 +206,6 @@ infobox的处理：
 * 当第一轮字符串匹配失败时，进行第二轮词义匹配，将infobox里的k-v对中所有的key（去除下划线）值翻译成中文（借助百度翻译的API接口，参见`english_translation.py`，关键代码如下）
 
 ```python
-appid = '20151113000005349'
-secretKey = 'osubCEzlGjzvw8qdQc41'
 httpClient = None
 myurl = '/api/trans/vip/translate'
 q = words
