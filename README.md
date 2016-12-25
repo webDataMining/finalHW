@@ -16,10 +16,10 @@
 
 ## 编译 & 运行环境
 
-* 问题分类：Java，Win 10
+* 问题分类：Java 8，Win 10
 * solr搜索引擎及API：Apache 2.4.6，PHP 5.6.22，CentOS 阿里云服务器
 * 开放测试信息处理：Objective-C，Xcode 8.2.1，macOS
-* 封闭测试信息处理，结果抽取：Python 3/ Java，Win 10/ macOS
+* 封闭测试信息处理，结果抽取：Python 3/ Java 8，Win 10/ macOS
 
 ## 系统架构 & 关键技术
 
