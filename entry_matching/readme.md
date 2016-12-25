@@ -9,6 +9,7 @@
 >  其中用到了[中文词义向量库 word_vectors_20161214.dump](http://pan.baidu.com/s/1hrNcmI4)
 
 开发环境：Python3.5.1 + requests
+
 文件说明：
 
  - **matching_main.py**： 程序的核心代码，用于串联各个代码文件，并实现主要逻辑
