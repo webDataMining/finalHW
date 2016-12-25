@@ -15,11 +15,13 @@
 * 曾繁辉：问题分类，封闭测试答案提取，开放测试答案提取（基于范志康给出的部分结果）
 ## 编译 & 运行环境
 
+* 问题分类：Java，Win 10
 * solr搜索引擎及API：Apache 2.4.6，PHP 5.6.22，CentOS 阿里云服务器
 * 开放测试信息处理：Objective-C，Xcode 8.2.1，macOS
-* 封闭测试信息处理，结果抽取：Python 3，Win 10/ macOS
+* 封闭测试信息处理，结果抽取：Python 3/ Java，Win 10/ macOS
 
 ## 系统架构 & 关键技术
+
 * 整个系统包括问句分析、信息检索和答案抽取三个主模块。
 * 使用[solr](http://lucene.apache.org/solr/)作为封闭测试维基数据的搜索引擎和数据源
 * 使用PHP编写爬虫作为开放测试的数据源
@@ -29,11 +31,93 @@
  * 使用[HanLP](http://hanlp.linrunsoft.com/)作为分词、句法分析、命名实体识别的工具包。
  
 ## 使用的方法 & 资源
+
  * 根据训练集和测试集的分类情况，针对特定类别写模板。主要包括年份、人名、地名、国家、时间等。
  * 对于无法分类的问题，使用句法依存关系，先找出核心成分，再根据主谓、动宾、介宾、间宾等关系提取主语和宾语，在候选句子中进行检索。
  
 ### 封闭测试部分
 
+#### 问题分类：
+
+根据对问题训练集和测试集的统计，发现一些特此那个类型的问题出现频率高，包括：
+
+ * 人名
+ * 地名
+ * 日期
+ * 地点
+ * 国家
+ * 城市
+ * 省份
+ * 数量
+ * 朝代
+ * ……
+
+这些问题占所有问题的比例可以达到40%以上。对于这些问题寻求高可靠性的模板，可以有效提高系统性能。
+另外，由于维基百科的预料的局限性，一些类别的问题在封闭集上得到正确答案的可能性极低，例如：
+
+ * “下一句”问题
+ * 涉及媒体（歌曲、书等）原文的问题
+ * ……
+ 
+对于这些问题，在封闭测试中考虑的意义不大，所以在问题分类中也将其单独考虑。具体
+具体涉及的部分代码为：
+
+```java
+    /*******问题分类********/
+    public static String query_classifier(String query){
+    	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
+    		return "Name";
+    	}
+    	if(query.matches(".*首都.*")){
+    		return "Capital";
+    	}
+    	if(query.matches(".*什么颜色.*")||query.matches(".*颜色是什么.*")||query.matches(".*哪种颜色.*")){
+    		return "Color";
+    	}
+    	if(query.matches(".*哪里.*")||query.matches(".*哪儿.*")||query.matches(".*什么地方.*")){
+    		return "Location";//不准
+    	} 	    	
+    	if(query.matches(".*下一句.*")){
+    		return "Next_Sentence";
+    	}
+    	if(query.matches(".*朝代.*")){
+    		return "Dynasty";
+    	}
+    	if(query.matches(".*哪年.*")||query.matches(".*哪一年.*")){
+    		return "Year_Number";//不准
+    	}
+    	if(query.matches(".*多少年.*")||query.matches(".*几年.*")){
+    		return "Year_Count";//不准
+    	}
+    	if(query.matches(".*几月几号.*")||query.matches(".*几月几日.*")){
+    		return "Month_Day";//不准
+    	}    
+    	if(query.matches(".*哪个月.*")||query.matches(".*几月.*")){
+    		return "Month";
+    	}    	
+    	if(query.matches(".*几号.*")||query.matches(".*几日.*")||query.matches(".*哪天.*")||query.matches(".*哪一天.*")){
+    		return "Day";//不准
+    	}
+    	if(query.matches(".*什么时间.*")||query.matches(".*什么时候.*")||query.matches(".*何时.*")||query.matches(".*多少时间.*")||query.matches(".*多长时间.*")||query.matches(".*时间是.*")){
+    		return "Time";//不准
+    	} 	
+    	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
+    		return "Country";
+    	}
+    	if(query.matches(".*哪个省.*")||query.matches(".*省份.*")){//省份有bug
+    		return "Province";
+    	}
+    	if(query.matches(".*哪.*个.*城市.*")||query.matches(".*哪个市.*")||query.matches(".*哪.*座城市.*")){
+    		return "City";
+    	}
+    	if(query.matches(".*几.*")||query.matches(".*多少.*")){
+    		return "Count";//不准
+    	}    	
+    	return "Unknown";
+    }
+```
+
+ 
 #### 词条索引：
 
 使用了solr搜索引擎，配置在阿里云服务器上，查询官方文档，构造XML导入数据：
