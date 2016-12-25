@@ -408,12 +408,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
             		if(ob_que.equals(ob_sen)){
             			if(subject_sen.size()>0)
             			answer = subject_sen.get(0);
-            			/*
-            			if(answer.equals(true_answer)){
-            				find = 1;
-            				break;
-            			}
-            			*/
             			find = 1;
             			break;
             		}
@@ -436,12 +430,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
             		if(sub_que.equals(sub_sen)){
             			if(object_sen.size()>0)
             			answer = object_sen.get(0);
-            			/*
-            			if(answer.equals(true_answer)){
-            				find = 1;
-            				break;
-            			}
-            			*/
             			find = 1;
             			break;
             		}
