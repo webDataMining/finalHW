@@ -13,6 +13,7 @@
 * 王鹏飞：维基百科的infobox提取和处理，根据问题和infobox中键值key得匹配程度返回置信度高的推荐答案（基于范志康和温凯给出的部分结果，代码在entry_matching文件夹中）
 * 温凯：句子评分及排序，基于TrieTree的维基百科查询词匹配
 * 曾繁辉：问题分类，封闭测试答案提取，开放测试答案提取（基于范志康给出的部分结果）
+
 ## 编译 & 运行环境
 
 * 问题分类：Java，Win 10
@@ -194,7 +195,7 @@
 * [requests](http://docs.python-requests.org/en/master/)：用于在Python中调用维基百科查询API并对返回的json数据进行解析。
 
 #### infobox提取与处理
-对得到的问题及关键词汇txt文本进行处理，提取出关键词信息，并得到所有关键词对的排列，两个关键词分别作为维基百科查询词search和infobox匹配词obj（参见**loadFocusWord.py**文件）
+对得到的问题及关键词汇txt文本进行处理，提取出关键词信息，并得到所有关键词对的排列，两个关键词分别作为维基百科查询词search和infobox匹配词obj（参见`loadFocusWord.py`文件）
 
 针对每个问题，依据词条title和查询词的相关程度得到对应text的相关度p1，依据从高到低的相关度在text里面寻找含有infobox的“meta_boxes”模块，总共提取最多3个infobox，找到之后进行infobox的处理
 
@@ -202,7 +203,8 @@ infobox的处理：
 
 * 先进行一轮字符串匹配（中英文同时进行），如果匹配上了，那就直接返回结果，同时infobox置信度p2为1，跳过以后的步骤
 
-* 当第一轮字符串匹配失败时，进行第二轮词义匹配，将infobox里的k-v对中所有的key（去除下划线）值翻译成中文（借助百度翻译的API接口，参见**english_translation.py**，关键代码如下）
+* 当第一轮字符串匹配失败时，进行第二轮词义匹配，将infobox里的k-v对中所有的key（去除下划线）值翻译成中文（借助百度翻译的API接口，参见`english_translation.py`，关键代码如下）
+
 ```python
 appid = '20151113000005349'
 secretKey = 'osubCEzlGjzvw8qdQc41'
@@ -226,16 +228,19 @@ try:
     result = eval(response.read().decode())
     return(result["trans_result"][0]['dst'])
 ```
-* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见**loadWordVector.py**），词义相似度的计算如下
+
+* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见`loadWordVector.py`，其中用到了[中文词义向量库 word_vectors_20161214.dump](https://pan.baidu.com/s/1hrNcmI4)），词义相似度的计算如下
+
 ```python
 nfo_key_array = np.array(info_key_vec[k]) 
 info_key_len = np.sqrt(info_key_array.dot(info_key_array)) #infobox的key的词义向量的模长
 cos_angel = obj_array.dot(info_key_array)/(obj_len*info_key_len) #计算两个向量的夹角余弦
 vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目加入字典
 ```
+
 * 对vec_cos依据value进行排序，将前五个词条作为这个infobox的推荐答案recommend，置信度为p1*p2
 
-对infobox处理返回的推荐结果依据置信度p1p2进行排序，按置信度从高到低写入文件**result.txt**中，同时筛选出同一词条中置信度前五的答案作为推荐答案，写入文件**result_recommend.txt**中
+对infobox处理返回的推荐结果依据置信度p1p2进行排序，按置信度从高到低写入文件`result.txt`中，同时筛选出同一词条中置信度前五的答案作为推荐答案，写入文件`result_recommend.txt`中
 
 #### 句子打分(开放测试使用同样的算法)
 
@@ -276,7 +281,192 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 为封闭测试抽取的句子在autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt中
 为开放测试抽取的句子在autoQA/online\_questions\_recommend\_sentences.zip中
 
+#### 答案提取
 
+ 对于可分类的问题和不可分类的问题，采取不同方法提取答案。
+ 
+##### 可分类问题
+
+ 采用手写模板的方法，在训练集中可以对特定类别的问题给予可靠的答案。以国家为例：
+ 如果问题是：“国际海洋法法庭的总部位于哪个国家”时，在上述的问题分类里面已将其分为“Country”类，在这里我们调用针对国家分类的函数：
+ 
+ ```java
+ /***************国家************/
+    	if(ans_type.equals("Country")){
+    		for(String key: keywords){
+    			for(String cc:Country){
+    				if(key.indexOf(cc)>=0){
+    					if(query.indexOf(cc)>=0) continue;//去重
+    					find = 1;
+    					answer = cc;
+    					break;   					
+    				}
+    			}
+    			if(find == 1) break;
+    		}
+    		if(find==0){
+	    	for(String sentence: cand){
+	    		List<Term> termList = segment.seg(sentence);
+	    		for(Term t:termList){
+	    			//String type_word = t.nature.toString();
+	    			for(String cc:Country){
+	    				if(t.word.indexOf(cc)>=0) {
+	    					if(query.indexOf(cc)>=0) continue;//去重
+	    					find = 1;
+	    					answer = cc;
+	    					break;
+	    				}
+	    		}
+	    		if(find == 1) break;
+	    	}
+	    	}	
+	    	}
+	    	if(find == 1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+	    		if(answer.equals(true_answer)){
+	    			count = count + 1;
+	    		}
+    	}
+    	}
+ ```
+ 按照返回的五个句子按评分从高到低依次处理，对于每个句子：
+ 
+ * 先匹配词条名称，如果词条名称符合“国家”的要求，则取得答案，否则匹配具体的句子
+ * 用事先建立的世界国家的库匹配句子，匹配到的第一个国家为答案。
+ 本例中第一个句子为“'始建于1996年，总部位于德国汉堡市，是专门审理海洋法案件的国际组织。', '国际海洋法法庭'”。于是德国被正确提取出来
+#### 不可分类问题
+* 采用依存句法分析，核心代码如下：
+
+```java
+ public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
+    	CoNLLSentence query_c = HanLP.parseDependency(query);
+    	String answer = "";
+    	int find = 0;
+    	ArrayList<String> subject_arr = new ArrayList<String>();
+    	ArrayList<String> object_arr = new ArrayList<String>();
+    	String query_main = "";
+        for (CoNLLWord word : query_c){
+            if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
+        }
+        for (CoNLLWord word : query_c){
+            if(word.HEAD.LEMMA.equals(query_main)   &&(word.DEPREL.equals("主谓关系")  )) {
+            	subject_arr.add(word.LEMMA);
+            }
+            if(word.HEAD.LEMMA == query_main && (word.DEPREL.equals("动宾关系")||word.DEPREL.equals("间宾关系")||word.DEPREL.equals("介宾关系"))){
+            	object_arr.add(word.LEMMA);
+            }
+        }
+        for (String sentence: cand){
+        	String sentence_main = "";
+        	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
+        	ArrayList<String> subject_sen = new ArrayList<String>();
+        	ArrayList<String> object_sen = new ArrayList<String>();
+            for (CoNLLWord word : query_c){
+                if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+            }
+            if(sentence_main.equals(query_main)==false) continue;
+            for (CoNLLWord word : sentence_c){
+                //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+                if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
+                	subject_sen.add(word.LEMMA);
+                }
+                if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
+                	object_sen.add(word.LEMMA);
+                }
+            }
+            for(String sub_que: subject_arr){
+            	for(String ob_sen:object_sen){
+            		if(sub_que.equals(ob_sen)){
+            			if(subject_sen.size()>0)
+            			answer = subject_sen.get(0);
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+            for(String ob_que: object_arr){
+            	for(String ob_sen:object_sen){
+            		if(ob_que.equals(ob_sen)){
+            			if(subject_sen.size()>0)
+            			answer = subject_sen.get(0);
+            			/*
+            			if(answer.equals(true_answer)){
+            				find = 1;
+            				break;
+            			}
+            			*/
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }           
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+            for(String sub_que: subject_arr){
+            	for(String sub_sen:subject_sen){
+            		if(sub_que.equals(sub_sen)){
+            			if(object_sen.size()>0)
+            			answer = object_sen.get(0);
+            			/*
+            			if(answer.equals(true_answer)){
+            				find = 1;
+            				break;
+            			}
+            			*/
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }           
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+        }
+    }
+```
+
+本段的思路是：
+
+* 使用HanLP对问题（query）进行依存句法分析，得到核心成分（一般是谓语）。尔后找到跟谓语形成主谓关系的词，将其标记为主语。找到与谓语形成（动宾/间宾/介宾）关系的词语，将其标记为宾语。
+* 再次使用HanLP对每一个返回的句子进行依存句法分析，同样得到核心成分、主语、宾语。
+* 对于问题的主语、宾语，和句子的主语、宾语，可以形成四对匹配。当句子的主语与问题的主语或宾语匹配成功时，取句子的宾语为答案。当句子的宾语与问题的主语或宾语匹配成功时，取句子的主语为答案。
 
 
 ### 开放测试部分
@@ -332,3 +522,4 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 * [HanLP官方文档](http://hanlp.linrunsoft.com/doc/_build/html/index.html)
 * [汪卫明, 梁东莺. 基于语义依存关系匹配的汉语句子相似度计算[J]. 深圳信息职业技术学院学报, 2014, 12(1):56-61.](http://mall.cnki.net/magazine/article/SZXZ201401012.htm)
 * [百度翻译API使用说明文档](http://api.fanyi.baidu.com/api/trans/product/apidoc)
+* [中文词义向量库 word_vectors_20161214.dump](http://pan.baidu.com/s/1hrNcmI4)
