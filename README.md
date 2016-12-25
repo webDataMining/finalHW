@@ -346,16 +346,10 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
     	ArrayList<String> subject_arr = new ArrayList<String>();
     	ArrayList<String> object_arr = new ArrayList<String>();
     	String query_main = "";
-    	/*
-        for (CoNLLWord word : query_c){
-            System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
-        }   
-        */ 	
         for (CoNLLWord word : query_c){
             if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
         }
         for (CoNLLWord word : query_c){
-            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
             if(word.HEAD.LEMMA.equals(query_main)   &&(word.DEPREL.equals("主谓关系")  )) {
             	subject_arr.add(word.LEMMA);
             }
