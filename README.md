@@ -273,6 +273,9 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 
 对每个词条，将其分句后，对每个句子计算上述四种相似度得分的和，作为该句子的相似度得分sim\_sentence，然后将N\_solr个词条中的每个句子的sim\_sentence乘以前文中提到的权重，得到每个句子最终的得分sim\_sentence\_overall，再依sim\_sentence\_overall将所有句子进行排序，取出排名前五的句子，送入答案抽取阶段。
 
+为封闭测试抽取的句子在autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt中
+为开放测试抽取的句子在autoQA/online\_questions\_recommend\_sentences.zip中
+
 
 
 
