@@ -75,7 +75,7 @@
     		return "Color";
     	}
     	if(query.matches(".*哪里.*")||query.matches(".*哪儿.*")||query.matches(".*什么地方.*")){
-    		return "Location";//不准
+    		return "Location";
     	} 	    	
     	if(query.matches(".*下一句.*")){
     		return "Next_Sentence";
@@ -84,34 +84,34 @@
     		return "Dynasty";
     	}
     	if(query.matches(".*哪年.*")||query.matches(".*哪一年.*")){
-    		return "Year_Number";//不准
+    		return "Year_Number";
     	}
     	if(query.matches(".*多少年.*")||query.matches(".*几年.*")){
-    		return "Year_Count";//不准
+    		return "Year_Count";
     	}
     	if(query.matches(".*几月几号.*")||query.matches(".*几月几日.*")){
-    		return "Month_Day";//不准
+    		return "Month_Day";
     	}    
     	if(query.matches(".*哪个月.*")||query.matches(".*几月.*")){
     		return "Month";
     	}    	
     	if(query.matches(".*几号.*")||query.matches(".*几日.*")||query.matches(".*哪天.*")||query.matches(".*哪一天.*")){
-    		return "Day";//不准
+    		return "Day";
     	}
     	if(query.matches(".*什么时间.*")||query.matches(".*什么时候.*")||query.matches(".*何时.*")||query.matches(".*多少时间.*")||query.matches(".*多长时间.*")||query.matches(".*时间是.*")){
-    		return "Time";//不准
+    		return "Time";
     	} 	
     	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
     		return "Country";
     	}
-    	if(query.matches(".*哪个省.*")||query.matches(".*省份.*")){//省份有bug
+    	if(query.matches(".*哪个省.*")||query.matches(".*省份.*")){
     		return "Province";
     	}
     	if(query.matches(".*哪.*个.*城市.*")||query.matches(".*哪个市.*")||query.matches(".*哪.*座城市.*")){
     		return "City";
     	}
     	if(query.matches(".*几.*")||query.matches(".*多少.*")){
-    		return "Count";//不准
+    		return "Count";
     	}    	
     	return "Unknown";
     }
