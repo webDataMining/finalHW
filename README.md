@@ -151,3 +151,4 @@
 ## 参考文献
 
 * [solr官方文档](https://wiki.apache.org/solr)
+* [HanLP官方文档](http://hanlp.linrunsoft.com/doc/_build/html/index.html)
