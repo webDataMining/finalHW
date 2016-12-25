@@ -558,7 +558,33 @@ if (!$find) {
 ".*?《(.|[^《]*?)》(是|出自).*?的.*?(歌|曲).*" => "“$1” 是谁唱的",
 ```
 
-* 对于返回的结果，我们发现有许多问题来自于《一站到底》节目题库，返回的结果也都是与《一站到底》相关的信息。对于这些信息，尝试使用正则直接提取出正确答案
+* 对于返回的结果，我们发现有许多问题来自于《一站到底》节目题库，返回的结果也都是与《一站到底》相关的信息。对于这些信息，尝试使用正则直接提取出正确答案。匹配一站到底的关键代码如下：
+
+```objc
+- (NSString *)_findYZDDWithQuestion:(NSString *)question andAnswer:(NSString *)answer {
+    NSMutableDictionary<NSString *, NSNumber *> *answersCount = [NSMutableDictionary dictionary];
+
+    ......
+    
+    NSString *regpat = [NSString stringWithFormat:@"([0-9]{1,3})[.|:|,]? ?%@(.*?)([0-9]{1,3})", question];
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:regpat options:NSRegularExpressionCaseInsensitive error:nil];
+    NSArray<NSTextCheckingResult *> *matches = [regex matchesInString:answer options:NSMatchingReportCompletion range:NSMakeRange(0, answer.length)];
+    if (matches.count > 0) {
+        [matches enumerateObjectsUsingBlock:^(NSTextCheckingResult * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSInteger currentNum = [[answer substringWithRange:[obj rangeAtIndex:1]] integerValue];
+            NSInteger nextNum = [[answer substringWithRange:[obj rangeAtIndex:3]] integerValue];
+            if (nextNum == currentNum + 1) {
+                NSString *recommend = [answer substringWithRange:[obj rangeAtIndex:2]];
+                addAnswer(recommend);
+            }
+        }];
+    }
+    
+    ......
+}
+
+```
+
 * 运行工程的过程中还遇到了一个问题，就是搜狗搜索对IP的访问频率有限制，超过一定频率则IP会被封禁1~2小时不等。因此设置了每次查询后线程随机休眠一段时间的解决方案，以及多部署几套API于不同IP，发现被封后轮流切换
 * 预处理最终结果（见`OnlineQA/OnlineQA/data/answers-final.html`，标绿的为已知答案）：搜索引擎推荐答案：1163个，一站到底题库确信匹配：2910个
 
