@@ -22,7 +22,7 @@
 
 ## 系统架构 & 关键技术
 
-* 整个系统包括问句分析、信息检索、句子排序、答案抽取四个主模块。
+* 整个系统包括问句分析、信息检索、句子打分、答案抽取四个主模块。
 * 使用[solr](http://lucene.apache.org/solr/)作为封闭测试维基数据的搜索引擎和数据源
 * 使用PHP编写爬虫作为开放测试的数据源
 * 为了方便协同开发，使用PHP编写了一个API（封闭测试和开放测试均使用此API进行查询），API部署于[search.fanzhikang.cn/api/](http://search.fanzhikang.cn/api/)，API程序和文档在压缩包中`search`文件夹，也可见[GitHub](https://github.com/webDataMining/server)
