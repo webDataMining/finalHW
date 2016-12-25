@@ -232,7 +232,7 @@ try:
 * 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见`loadWordVector.py`，其中用到了[中文词义向量库 word_vectors_20161214.dump](https://pan.baidu.com/s/1hrNcmI4)），词义相似度的计算如下
 
 ```python
-nfo_key_array = np.array(info_key_vec[k]) 
+info_key_array = np.array(info_key_vec[k]) 
 info_key_len = np.sqrt(info_key_array.dot(info_key_array)) #infobox的key的词义向量的模长
 cos_angel = obj_array.dot(info_key_array)/(obj_len*info_key_len) #计算两个向量的夹角余弦
 vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目加入字典
