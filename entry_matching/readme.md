@@ -8,6 +8,7 @@
 >  此部分实现的功能主要是利用Python对API返回的json形式的数据进行处理，提取出其中的infobox信息并进行处理，通过对焦点词汇的字符串匹配和词义匹配，对查询问题和返回答案的相似度进行排序，返回置信度高的infobox中的内容
 >  其中用到了[中文词义向量库 word_vectors_20161214.dump](http://pan.baidu.com/s/1hrNcmI4)
 
+开发环境：Python3.5.1 + requests
 文件说明：
 
  - **matching_main.py**： 程序的核心代码，用于串联各个代码文件，并实现主要逻辑
