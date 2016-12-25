@@ -195,7 +195,7 @@
 * [requests](http://docs.python-requests.org/en/master/)：用于在Python中调用维基百科查询API并对返回的json数据进行解析。
 
 #### infobox提取与处理
-对得到的问题及关键词汇txt文本进行处理，提取出关键词信息，并得到所有关键词对的排列，两个关键词分别作为维基百科查询词search和infobox匹配词obj（参见**loadFocusWord.py**文件）
+对得到的问题及关键词汇txt文本进行处理，提取出关键词信息，并得到所有关键词对的排列，两个关键词分别作为维基百科查询词search和infobox匹配词obj（参见`loadFocusWord.py`文件）
 
 针对每个问题，依据词条title和查询词的相关程度得到对应text的相关度p1，依据从高到低的相关度在text里面寻找含有infobox的“meta_boxes”模块，总共提取最多3个infobox，找到之后进行infobox的处理
 
@@ -203,7 +203,8 @@ infobox的处理：
 
 * 先进行一轮字符串匹配（中英文同时进行），如果匹配上了，那就直接返回结果，同时infobox置信度p2为1，跳过以后的步骤
 
-* 当第一轮字符串匹配失败时，进行第二轮词义匹配，将infobox里的k-v对中所有的key（去除下划线）值翻译成中文（借助百度翻译的API接口，参见**english_translation.py**，关键代码如下）
+* 当第一轮字符串匹配失败时，进行第二轮词义匹配，将infobox里的k-v对中所有的key（去除下划线）值翻译成中文（借助百度翻译的API接口，参见`english_translation.py`，关键代码如下）
+
 ```python
 appid = '20151113000005349'
 secretKey = 'osubCEzlGjzvw8qdQc41'
@@ -227,16 +228,19 @@ try:
     result = eval(response.read().decode())
     return(result["trans_result"][0]['dst'])
 ```
-* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见**loadWordVector.py**，其中用到了[中文词义向量库 word_vectors_20161214.dump](https://pan.baidu.com/s/1hrNcmI4)），词义相似度的计算如下
+
+* 针对每一个处理过的key值，将key与目标词汇进行词义匹配，计算余弦相似度(作为置信度p2)，并将英文key和相似度以字典方式存入vec_cos中（词义向量的导入参见`loadWordVector.py`，其中用到了[中文词义向量库 word_vectors_20161214.dump](https://pan.baidu.com/s/1hrNcmI4)），词义相似度的计算如下
+
 ```python
 nfo_key_array = np.array(info_key_vec[k]) 
 info_key_len = np.sqrt(info_key_array.dot(info_key_array)) #infobox的key的词义向量的模长
 cos_angel = obj_array.dot(info_key_array)/(obj_len*info_key_len) #计算两个向量的夹角余弦
 vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目加入字典
 ```
+
 * 对vec_cos依据value进行排序，将前五个词条作为这个infobox的推荐答案recommend，置信度为p1*p2
 
-对infobox处理返回的推荐结果依据置信度p1p2进行排序，按置信度从高到低写入文件**result.txt**中，同时筛选出同一词条中置信度前五的答案作为推荐答案，写入文件**result_recommend.txt**中
+对infobox处理返回的推荐结果依据置信度p1p2进行排序，按置信度从高到低写入文件`result.txt`中，同时筛选出同一词条中置信度前五的答案作为推荐答案，写入文件`result_recommend.txt`中
 
 #### 句子打分(开放测试使用同样的算法)
 
@@ -338,6 +342,7 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
  本例中第一个句子为“'始建于1996年，总部位于德国汉堡市，是专门审理海洋法案件的国际组织。', '国际海洋法法庭'”。于是德国被正确提取出来
 #### 不可分类问题
 * 采用依存句法分析，核心代码如下：
+
 ```java
  public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
     	CoNLLSentence query_c = HanLP.parseDependency(query);
@@ -456,6 +461,7 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
         }
     }
 ```
+
 本段的思路是：
 
 * 使用HanLP对问题（query）进行依存句法分析，得到核心成分（一般是谓语）。尔后找到跟谓语形成主谓关系的词，将其标记为主语。找到与谓语形成（动宾/间宾/介宾）关系的词语，将其标记为宾语。
