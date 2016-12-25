@@ -18,6 +18,9 @@
 * `Sentence.py` 表示一个句子的类。根据ltp的分析对句子进行处理，可以提取句子主干，分析关系等。
 * `Word.py`  表示一个词的类
 * `workflow.py`  处理一个问题的流程
-
+* `main.java`是主程序
+* `Answer_Retrieval1.java`是省份、国家、颜色、城市、朝代问题的部分
+* `WordJudge.java`是部分处理函数
+* `hanlp.properties`是HanLP的配置文件
 
 
