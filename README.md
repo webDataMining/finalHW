@@ -277,7 +277,206 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 为封闭测试抽取的句子在autoQA/z\_full\_questions\_recommend\_sentences\_ver3\_part{1,2,3}.txt中
 为开放测试抽取的句子在autoQA/online\_questions\_recommend\_sentences.zip中
 
+#### 答案提取
 
+ 对于可分类的问题和不可分类的问题，采取不同方法提取答案。
+ 
+##### 可分类问题
+
+ 采用手写模板的方法，在训练集中可以对特定类别的问题给予可靠的答案。以国家为例：
+ 如果问题是：“国际海洋法法庭的总部位于哪个国家”时，在上述的问题分类里面已将其分为“Country”类，在这里我们调用针对国家分类的函数：
+ 
+ ```java
+ /***************国家************/
+    	if(ans_type.equals("Country")){
+    		for(String key: keywords){
+    			for(String cc:Country){
+    				if(key.indexOf(cc)>=0){
+    					if(query.indexOf(cc)>=0) continue;//去重
+    					find = 1;
+    					answer = cc;
+    					break;   					
+    				}
+    			}
+    			if(find == 1) break;
+    		}
+    		if(find==0){
+	    	for(String sentence: cand){
+	    		List<Term> termList = segment.seg(sentence);
+	    		for(Term t:termList){
+	    			//String type_word = t.nature.toString();
+	    			for(String cc:Country){
+	    				if(t.word.indexOf(cc)>=0) {
+	    					if(query.indexOf(cc)>=0) continue;//去重
+	    					find = 1;
+	    					answer = cc;
+	    					break;
+	    				}
+	    		}
+	    		if(find == 1) break;
+	    	}
+	    	}	
+	    	}
+	    	if(find == 1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+	    		if(answer.equals(true_answer)){
+	    			count = count + 1;
+	    		}
+    	}
+    	}
+ ```
+ 按照返回的五个句子按评分从高到低依次处理，对于每个句子：
+ 
+ * 先匹配词条名称，如果词条名称符合“国家”的要求，则取得答案，否则匹配具体的句子
+ * 用事先建立的世界国家的库匹配句子，匹配到的第一个国家为答案。
+ 本例中第一个句子为“'始建于1996年，总部位于德国汉堡市，是专门审理海洋法案件的国际组织。', '国际海洋法法庭'”。于是德国被正确提取出来
+#### 不可分类问题
+* 采用依存句法分析，核心代码如下：
+```java
+ public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
+    	CoNLLSentence query_c = HanLP.parseDependency(query);
+    	String answer = "";
+    	//System.out.println(query);
+    	//System.out.println("正确答案是："+true_answer);
+    	int find = 0;
+    	ArrayList<String> subject_arr = new ArrayList<String>();
+    	ArrayList<String> object_arr = new ArrayList<String>();
+    	String query_main = "";
+    	/*
+        for (CoNLLWord word : query_c){
+            System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+        }   
+        */ 	
+        for (CoNLLWord word : query_c){
+            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+            if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
+        }
+        for (CoNLLWord word : query_c){
+            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+            if(word.HEAD.LEMMA.equals(query_main)   &&(word.DEPREL.equals("主谓关系")  )) {
+            	subject_arr.add(word.LEMMA);
+            }
+            if(word.HEAD.LEMMA == query_main && (word.DEPREL.equals("动宾关系")||word.DEPREL.equals("间宾关系")||word.DEPREL.equals("介宾关系"))){
+            	object_arr.add(word.LEMMA);
+            }
+        }
+        for (String sentence: cand){
+        	String sentence_main = "";
+        	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
+        	ArrayList<String> subject_sen = new ArrayList<String>();
+        	ArrayList<String> object_sen = new ArrayList<String>();
+            for (CoNLLWord word : query_c){
+                //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+                if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+            }
+            if(sentence_main.equals(query_main)==false) continue;
+            for (CoNLLWord word : sentence_c){
+                //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+                if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
+                	subject_sen.add(word.LEMMA);
+                }
+                if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
+                	object_sen.add(word.LEMMA);
+                }
+            }
+            for(String sub_que: subject_arr){
+            	for(String ob_sen:object_sen){
+            		if(sub_que.equals(ob_sen)){
+            			if(subject_sen.size()>0)
+            			answer = subject_sen.get(0);
+            			/*
+            			if(answer.equals(true_answer)){
+            				find = 1;
+            				break;
+            			}
+            			*/
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+            for(String ob_que: object_arr){
+            	for(String ob_sen:object_sen){
+            		if(ob_que.equals(ob_sen)){
+            			if(subject_sen.size()>0)
+            			answer = subject_sen.get(0);
+            			/*
+            			if(answer.equals(true_answer)){
+            				find = 1;
+            				break;
+            			}
+            			*/
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }           
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+            for(String sub_que: subject_arr){
+            	for(String sub_sen:subject_sen){
+            		if(sub_que.equals(sub_sen)){
+            			if(object_sen.size()>0)
+            			answer = object_sen.get(0);
+            			/*
+            			if(answer.equals(true_answer)){
+            				find = 1;
+            				break;
+            			}
+            			*/
+            			find = 1;
+            			break;
+            		}
+            	}
+            	if(find==1) break;
+            }           
+            if(find==1){
+    	    	try{
+    	        	fw.write(answer);
+    	        	}
+    	        	catch (Exception e) {
+    	                System.out.println("写文件出错");
+    	                e.printStackTrace();
+    	            }
+            	if(answer.equals(true_answer)) count = count + 1;
+            	break;
+            }
+        }
+    }
+```
+本段的思路是：
+
+* 使用HanLP对问题（query）进行依存句法分析，得到核心成分（一般是谓语）。尔后找到跟谓语形成主谓关系的词，将其标记为主语。找到与谓语形成（动宾/间宾/介宾）关系的词语，将其标记为宾语。
+* 再次使用HanLP对每一个返回的句子进行依存句法分析，同样得到核心成分、主语、宾语。
+* 对于问题的主语、宾语，和句子的主语、宾语，可以形成四对匹配。当句子的主语与问题的主语或宾语匹配成功时，取句子的宾语为答案。当句子的宾语与问题的主语或宾语匹配成功时，取句子的主语为答案。
 
 
 ### 开放测试部分
