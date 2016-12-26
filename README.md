@@ -63,19 +63,19 @@
 例如，对于答案为人名的问题，我们用以下带有正则表达式的规则进行匹配
 
 ```java
-	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")
+if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")
 ||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
-		return "Name";
-	}
+	return "Name";
+}
 ```
 
 又如答案为国家的问题，使用的规则是：
 
 ```java
-	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")
-		||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
-		return "Country";
-	}
+if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")
+	||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
+	return "Country";
+}
 ```
 
 #### 词条索引：
@@ -84,25 +84,25 @@
 
 ```xml
 <dataConfig>
-        <dataSource type="FileDataSource" encoding="UTF-8" />
-        <document>
-        <entity name="page"
-                processor="XPathEntityProcessor"
-                stream="true"
-                forEach="/mediawiki/page/"
-                url="/var/www/html/solr/data/zhwiki-20161101-pages-articles-multistream-simplified.xml"
-                transformer="RegexTransformer,DateFormatTransformer"
-                >
-            <field column="id"        xpath="/mediawiki/page/id" />
-            <field column="title"     xpath="/mediawiki/page/title" />
-            <field column="revision"  xpath="/mediawiki/page/revision/id" />
-            <field column="user"      xpath="/mediawiki/page/revision/contributor/username" />
-            <field column="userId"    xpath="/mediawiki/page/revision/contributor/id" />
-            <field column="text"      xpath="/mediawiki/page/revision/text" />
-            <field column="timestamp" xpath="/mediawiki/page/revision/timestamp" dateTimeFormat="yyyy-MM-dd'T'hh:mm:ss'Z'" />
-            <field column="$skipDoc"  regex=".*?\{\{简繁重定向\}\}$" replaceWith="true" sourceColName="text"/>
-        </entity>
-        </document>
+    <dataSource type="FileDataSource" encoding="UTF-8" />
+    <document>
+    <entity name="page"
+            processor="XPathEntityProcessor"
+            stream="true"
+            forEach="/mediawiki/page/"
+            url="/var/www/html/solr/data/zhwiki-20161101-pages-articles-multistream-simplified.xml"
+            transformer="RegexTransformer,DateFormatTransformer"
+            >
+        <field column="id"        xpath="/mediawiki/page/id" />
+        <field column="title"     xpath="/mediawiki/page/title" />
+        <field column="revision"  xpath="/mediawiki/page/revision/id" />
+        <field column="user"      xpath="/mediawiki/page/revision/contributor/username" />
+        <field column="userId"    xpath="/mediawiki/page/revision/contributor/id" />
+        <field column="text"      xpath="/mediawiki/page/revision/text" />
+        <field column="timestamp" xpath="/mediawiki/page/revision/timestamp" dateTimeFormat="yyyy-MM-dd'T'hh:mm:ss'Z'" />
+        <field column="$skipDoc"  regex=".*?\{\{简繁重定向\}\}$" replaceWith="true" sourceColName="text"/>
+    </entity>
+    </document>
 </dataConfig>
 ```
 
