@@ -68,7 +68,8 @@
 ```
 又如答案为国家的问题，使用的规则是：
 ```java
-	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
+	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")
+		||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
 		return "Country";
 	}
 
