@@ -284,12 +284,11 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
  如果问题是：“国际海洋法法庭的总部位于哪个国家”时，在上述的问题分类里面已将其分为“Country”类，在这里我们调用针对国家分类的函数：
  
  ```java
- /***************国家************/
     	if(ans_type.equals("Country")){
     		for(String key: keywords){
     			for(String cc:Country){
     				if(key.indexOf(cc)>=0){
-    					if(query.indexOf(cc)>=0) continue;//去重
+    					if(query.indexOf(cc)>=0) continue;
     					find = 1;
     					answer = cc;
     					break;   					
@@ -304,7 +303,7 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 	    			//String type_word = t.nature.toString();
 	    			for(String cc:Country){
 	    				if(t.word.indexOf(cc)>=0) {
-	    					if(query.indexOf(cc)>=0) continue;//去重
+	    					if(query.indexOf(cc)>=0) continue;
 	    					find = 1;
 	    					answer = cc;
 	    					break;
@@ -312,21 +311,7 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 	    		}
 	    		if(find == 1) break;
 	    	}
-	    	}	
-	    	}
-	    	if(find == 1){
-    	    	try{
-    	        	fw.write(answer);
-    	        	}
-    	        	catch (Exception e) {
-    	                System.out.println("写文件出错");
-    	                e.printStackTrace();
-    	            }
-	    		if(answer.equals(true_answer)){
-	    			count = count + 1;
-	    		}
-    	}
-    	}
+		}
  ```
  按照返回的五个句子按评分从高到低依次处理，对于每个句子：
  
@@ -336,7 +321,12 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
  
 ##### 不可分类问题
 
-* 采用依存句法分析，核心代码如下：
+采用依存句法分析，首先分析问题：
+
+ * 由“核心关系”得到句子的谓语。
+ * 由主谓关系和谓语，得到问句主语集合
+ * 由动宾、介宾、间宾关系得到问句的宾语集合
+
 
 ```java
  public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
@@ -357,99 +347,34 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
             	object_arr.add(word.LEMMA);
             }
         }
-        for (String sentence: cand){
-        	String sentence_main = "";
-        	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
-        	ArrayList<String> subject_sen = new ArrayList<String>();
-        	ArrayList<String> object_sen = new ArrayList<String>();
-            for (CoNLLWord word : query_c){
-                if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+	}
+```
+接着对每一个返回的候选句子做同样的分析。
+```java
+    for (String sentence: cand){
+    	String sentence_main = "";
+    	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
+    	ArrayList<String> subject_sen = new ArrayList<String>();
+    	ArrayList<String> object_sen = new ArrayList<String>();
+        for (CoNLLWord word : query_c){
+            if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+        }
+        if(sentence_main.equals(query_main)==false) continue;
+        for (CoNLLWord word : sentence_c){
+            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
+            if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
+            	subject_sen.add(word.LEMMA);
             }
-            if(sentence_main.equals(query_main)==false) continue;
-            for (CoNLLWord word : sentence_c){
-                //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
-                if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
-                	subject_sen.add(word.LEMMA);
-                }
-                if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
-                	object_sen.add(word.LEMMA);
-                }
-            }
-            for(String sub_que: subject_arr){
-            	for(String ob_sen:object_sen){
-            		if(sub_que.equals(ob_sen)){
-            			if(subject_sen.size()>0)
-            			answer = subject_sen.get(0);
-            			find = 1;
-            			break;
-            		}
-            	}
-            	if(find==1) break;
-            }
-            if(find==1){
-    	    	try{
-    	        	fw.write(answer);
-    	        	}
-    	        	catch (Exception e) {
-    	                System.out.println("写文件出错");
-    	                e.printStackTrace();
-    	            }
-            	if(answer.equals(true_answer)) count = count + 1;
-            	break;
-            }
-            for(String ob_que: object_arr){
-            	for(String ob_sen:object_sen){
-            		if(ob_que.equals(ob_sen)){
-            			if(subject_sen.size()>0)
-            			answer = subject_sen.get(0);
-            			find = 1;
-            			break;
-            		}
-            	}
-            	if(find==1) break;
-            }           
-            if(find==1){
-    	    	try{
-    	        	fw.write(answer);
-    	        	}
-    	        	catch (Exception e) {
-    	                System.out.println("写文件出错");
-    	                e.printStackTrace();
-    	            }
-            	if(answer.equals(true_answer)) count = count + 1;
-            	break;
-            }
-            for(String sub_que: subject_arr){
-            	for(String sub_sen:subject_sen){
-            		if(sub_que.equals(sub_sen)){
-            			if(object_sen.size()>0)
-            			answer = object_sen.get(0);
-            			find = 1;
-            			break;
-            		}
-            	}
-            	if(find==1) break;
-            }           
-            if(find==1){
-    	    	try{
-    	        	fw.write(answer);
-    	        	}
-    	        	catch (Exception e) {
-    	                System.out.println("写文件出错");
-    	                e.printStackTrace();
-    	            }
-            	if(answer.equals(true_answer)) count = count + 1;
-            	break;
+            if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
+            	object_sen.add(word.LEMMA);
             }
         }
-    }
 ```
 
-本段的思路是：
+对于每个候选答案，按得分从高到低依次与问句进行匹配，规则是：
 
-* 使用HanLP对问题（query）进行依存句法分析，得到核心成分（一般是谓语）。尔后找到跟谓语形成主谓关系的词，将其标记为主语。找到与谓语形成（动宾/间宾/介宾）关系的词语，将其标记为宾语。
-* 再次使用HanLP对每一个返回的句子进行依存句法分析，同样得到核心成分、主语、宾语。
-* 对于问题的主语、宾语，和句子的主语、宾语，可以形成四对匹配。当句子的主语与问题的主语或宾语匹配成功时，取句子的宾语为答案。当句子的宾语与问题的主语或宾语匹配成功时，取句子的主语为答案。
+* 如果候选答案的**主语**匹配问句的主语或宾语，则取候选答案的**宾语**作为答案输出
+* 如果候选答案的**宾语**匹配问句的主语或宾语，则取候选答案的**主语**作为答案输出
 
 
 ### 开放测试部分
