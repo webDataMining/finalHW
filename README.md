@@ -59,21 +59,23 @@
  * ……
  
 对于这些问题，在封闭测试中考虑的意义不大，所以在问题分类中也将其单独考虑。
-<br >
+
 例如，对于答案为人名的问题，我们用以下带有正则表达式的规则进行匹配
+
 ```java
 	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")
 ||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
 		return "Name";
 	}
 ```
+
 又如答案为国家的问题，使用的规则是：
+
 ```java
 	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")
 		||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
 		return "Country";
 	}
-
 ```
 
 #### 词条索引：
@@ -244,33 +246,33 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
  如果问题是：“国际海洋法法庭的总部位于哪个国家”时，在上述的问题分类里面已将其分为“Country”类，在这里我们调用针对国家分类的函数：
  
  ```java
-    	if(ans_type.equals("Country")){
-    		for(String key: keywords){
-    			for(String cc:Country){
-    				if(key.indexOf(cc)>=0){
-    					if(query.indexOf(cc)>=0) continue;
-    					find = 1;
-    					answer = cc;
-    					break;   					
-    				}
-    			}
-    			if(find == 1) break;
-    		}
-    		if(find==0){
-	    	for(String sentence: cand){
-	    		List<Term> termList = segment.seg(sentence);
-	    		for(Term t:termList){
-	    			for(String cc:Country){
-	    				if(t.word.indexOf(cc)>=0) {
-	    					if(query.indexOf(cc)>=0) continue;
-	    					find = 1;
-	    					answer = cc;
-	    					break;
-	    				}
-	    		}
-	    		if(find == 1) break;
-	    	}
+if(ans_type.equals("Country")){
+	for(String key: keywords){
+		for(String cc:Country){
+			if(key.indexOf(cc)>=0){
+				if(query.indexOf(cc)>=0) continue;
+				find = 1;
+				answer = cc;
+				break;   					
+			}
 		}
+		if(find == 1) break;
+	}
+	if(find==0){
+	for(String sentence: cand){
+		List<Term> termList = segment.seg(sentence);
+		for(Term t:termList){
+			for(String cc:Country){
+				if(t.word.indexOf(cc)>=0) {
+					if(query.indexOf(cc)>=0) continue;
+					find = 1;
+					answer = cc;
+					break;
+				}
+		}
+		if(find == 1) break;
+	}
+}
  ```
  按照返回的五个句子按评分从高到低依次处理，对于每个句子：
  
