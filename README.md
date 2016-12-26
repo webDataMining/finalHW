@@ -288,47 +288,48 @@ if(ans_type.equals("Country")){
  * 由主谓关系和谓语，得到问句主语集合
  * 由动宾、介宾、间宾关系得到问句的宾语集合
 
-
 ```java
  public static void Unknown_query_main(String query, ArrayList<String> cand, ArrayList<String> keywords, String true_answer){
-    	CoNLLSentence query_c = HanLP.parseDependency(query);
-    	String answer = "";
-    	int find = 0;
-    	ArrayList<String> subject_arr = new ArrayList<String>();
-    	ArrayList<String> object_arr = new ArrayList<String>();
-    	String query_main = "";
-        for (CoNLLWord word : query_c){
-            if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
+	CoNLLSentence query_c = HanLP.parseDependency(query);
+	String answer = "";
+	int find = 0;
+	ArrayList<String> subject_arr = new ArrayList<String>();
+	ArrayList<String> object_arr = new ArrayList<String>();
+	String query_main = "";
+    for (CoNLLWord word : query_c){
+        if(word.DEPREL.equals("核心关系")) {query_main = word.LEMMA;break;}
+    }
+    for (CoNLLWord word : query_c){
+        if(word.HEAD.LEMMA.equals(query_main)   &&(word.DEPREL.equals("主谓关系")  )) {
+        	subject_arr.add(word.LEMMA);
         }
-        for (CoNLLWord word : query_c){
-            if(word.HEAD.LEMMA.equals(query_main)   &&(word.DEPREL.equals("主谓关系")  )) {
-            	subject_arr.add(word.LEMMA);
-            }
-            if(word.HEAD.LEMMA == query_main && (word.DEPREL.equals("动宾关系")||word.DEPREL.equals("间宾关系")||word.DEPREL.equals("介宾关系"))){
-            	object_arr.add(word.LEMMA);
-            }
+        if(word.HEAD.LEMMA == query_main && (word.DEPREL.equals("动宾关系")||word.DEPREL.equals("间宾关系")||word.DEPREL.equals("介宾关系"))){
+        	object_arr.add(word.LEMMA);
         }
-	}
+    }
+}
 ```
+
 接着对每一个返回的候选句子做同样的分析。
+
 ```java
-    for (String sentence: cand){
-    	String sentence_main = "";
-    	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
-    	ArrayList<String> subject_sen = new ArrayList<String>();
-    	ArrayList<String> object_sen = new ArrayList<String>();
-        for (CoNLLWord word : query_c){
-            if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+for (String sentence: cand){
+	String sentence_main = "";
+	CoNLLSentence sentence_c = HanLP.parseDependency(sentence);
+	ArrayList<String> subject_sen = new ArrayList<String>();
+	ArrayList<String> object_sen = new ArrayList<String>();
+    for (CoNLLWord word : query_c){
+        if(word.DEPREL.equals("核心关系")) {sentence_main = word.LEMMA;break;}
+    }
+    if(sentence_main.equals(query_main)==false) continue;
+    for (CoNLLWord word : sentence_c){
+        if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
+        	subject_sen.add(word.LEMMA);
         }
-        if(sentence_main.equals(query_main)==false) continue;
-        for (CoNLLWord word : sentence_c){
-            if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
-            	subject_sen.add(word.LEMMA);
-            }
-            if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
-            	object_sen.add(word.LEMMA);
-            }
+        if(word.HEAD.LEMMA.equals(query_main)  && (word.DEPREL.equals("动宾关系") ||word.DEPREL.equals("间宾关系") ||word.DEPREL.equals("介宾关系") )){
+        	object_sen.add(word.LEMMA);
         }
+    }
 ```
 
 对于每个候选答案，按得分从高到低依次与问句进行匹配，规则是：
