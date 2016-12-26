@@ -58,64 +58,22 @@
  * 涉及媒体（歌曲、书等）原文的问题
  * ……
  
-对于这些问题，在封闭测试中考虑的意义不大，所以在问题分类中也将其单独考虑。具体涉及的部分代码为：
-
+对于这些问题，在封闭测试中考虑的意义不大，所以在问题分类中也将其单独考虑。
+<br >
+例如，对于答案为人名的问题，我们用以下带有正则表达式的规则进行匹配
 ```java
-    /*******问题分类********/
-    public static String query_classifier(String query){
-    	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
-    		return "Name";
-    	}
-    	if(query.matches(".*首都.*")){
-    		return "Capital";
-    	}
-    	if(query.matches(".*什么颜色.*")||query.matches(".*颜色是什么.*")||query.matches(".*哪种颜色.*")){
-    		return "Color";
-    	}
-    	if(query.matches(".*哪里.*")||query.matches(".*哪儿.*")||query.matches(".*什么地方.*")){
-    		return "Location";
-    	} 	    	
-    	if(query.matches(".*下一句.*")){
-    		return "Next_Sentence";
-    	}
-    	if(query.matches(".*朝代.*")){
-    		return "Dynasty";
-    	}
-    	if(query.matches(".*哪年.*")||query.matches(".*哪一年.*")){
-    		return "Year_Number";
-    	}
-    	if(query.matches(".*多少年.*")||query.matches(".*几年.*")){
-    		return "Year_Count";
-    	}
-    	if(query.matches(".*几月几号.*")||query.matches(".*几月几日.*")){
-    		return "Month_Day";
-    	}    
-    	if(query.matches(".*哪个月.*")||query.matches(".*几月.*")){
-    		return "Month";
-    	}    	
-    	if(query.matches(".*几号.*")||query.matches(".*几日.*")||query.matches(".*哪天.*")||query.matches(".*哪一天.*")){
-    		return "Day";
-    	}
-    	if(query.matches(".*什么时间.*")||query.matches(".*什么时候.*")||query.matches(".*何时.*")||query.matches(".*多少时间.*")||query.matches(".*多长时间.*")||query.matches(".*时间是.*")){
-    		return "Time";
-    	} 	
-    	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
-    		return "Country";
-    	}
-    	if(query.matches(".*哪个省.*")||query.matches(".*省份.*")){
-    		return "Province";
-    	}
-    	if(query.matches(".*哪.*个.*城市.*")||query.matches(".*哪个市.*")||query.matches(".*哪.*座城市.*")){
-    		return "City";
-    	}
-    	if(query.matches(".*几.*")||query.matches(".*多少.*")){
-    		return "Count";
-    	}    	
-    	return "Unknown";
-    }
+	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
+		return "Name";
+	}
+```
+又如答案为国家的问题，使用的规则是：
+```java
+	if(query.matches(".*哪国.*")||query.matches(".*哪.*个国家.*")||query.matches(".*哪个.*国家.*")||query.matches(".*国籍.*")){
+		return "Country";
+	}
+
 ```
 
- 
 #### 词条索引：
 
 使用了solr搜索引擎，配置在阿里云服务器上，查询官方文档，构造XML导入数据：
@@ -300,7 +258,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
 	    	for(String sentence: cand){
 	    		List<Term> termList = segment.seg(sentence);
 	    		for(Term t:termList){
-	    			//String type_word = t.nature.toString();
 	    			for(String cc:Country){
 	    				if(t.word.indexOf(cc)>=0) {
 	    					if(query.indexOf(cc)>=0) continue;
