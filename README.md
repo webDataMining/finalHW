@@ -62,7 +62,8 @@
 <br >
 例如，对于答案为人名的问题，我们用以下带有正则表达式的规则进行匹配
 ```java
-	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
+	if(query.matches(".*谁.*")||query.matches(".*的人叫.*")||query.matches(".*的人是.*")
+||query.matches(".*名字.*")||query.matches(".*哪位.*")||query.matches(".*什么人.*")){
 		return "Name";
 	}
 ```
@@ -319,7 +320,6 @@ vec_cos[k] = cos_angel #将计算得到的余弦相似度连同infobox的条目�
         }
         if(sentence_main.equals(query_main)==false) continue;
         for (CoNLLWord word : sentence_c){
-            //System.out.printf("%s --(%s)--> %s\n", word.LEMMA, word.DEPREL, word.HEAD.LEMMA);
             if(word.HEAD.LEMMA.equals(query_main) &&(word.DEPREL.equals("主谓关系") )) {
             	subject_sen.add(word.LEMMA);
             }
